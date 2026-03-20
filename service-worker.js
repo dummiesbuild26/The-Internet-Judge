@@ -5,12 +5,12 @@
 
 const CACHE_NAME = 'tijy-v1';
 const ASSETS = [
-  './',
-  './index.html',
-  './judgements.json',
-  './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+'/The-Internet-Judge/',
+  '/The-Internet-Judge/index.html',
+  '/The-Internet-Judge/judgements.json',
+  '/The-Internet-Judge/manifest.json',
+  '/The-Internet-Judge/icons/icon-192.png',
+  '/The-Internet-Judge/icons/icon-512.png'
 ];
 
 // Install: cache all core assets
