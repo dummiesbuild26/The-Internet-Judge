@@ -2,7 +2,7 @@
   "name": "The Internet Judges You",
   "short_name": "Judges You",
   "description": "Confess your sins. Receive your verdict.",
-  "start_url": "/",
+  "start_url": "/The-Internet-Judge/",
   "display": "standalone",
   "background_color": "#0a0a0f",
   "theme_color": "#0a0a0f",
