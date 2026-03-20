@@ -5,10 +5,12 @@
 
 const CACHE_NAME = 'tijy-v1';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/judgements.json',
-  '/manifest.json'
+  './',
+  './index.html',
+  './judgements.json',
+  './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png'
 ];
 
 // Install: cache all core assets
@@ -35,6 +37,12 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(cached => {
+      return cached || fetch(event.request).catch(() => {
+        return caches.match('./index.html');
+      });
+    })
+  );
+});    caches.match(event.request).then(cached => {
       return cached || fetch(event.request).catch(() => {
         // If offline and asset not cached, return index.html
         return caches.match('/index.html');
