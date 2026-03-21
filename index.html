@@ -1,16 +1,1012 @@
-<style>
-    #buy-me-a-coffee {
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        background-color: #ff813f;
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        text-align: center;
-        text-decoration: none;
-        font-size: 16px;
-    }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Internet Judges You</title>
 
-<a href="https://www.buymeacoffee.com" id="buy-me-a-coffee">Buy Me a Coffee</a>
+<!-- PWA Meta -->
+<link rel="manifest" href="/The-Internet-Judge/manifest.json">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="The Internet Judges You">
+<link rel="apple-touch-icon" href="/The-Internet-Judge/icons/icon-192.png">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a38;
+    --accent: #ff3a3a;
+    --green: #39ff14;
+    --text: #f0f0ff;
+    --muted: #666680;
+    --glow-red: rgba(255,58,58,0.35);
+    --glow-green: rgba(57,255,20,0.3);
+    --card-max: 420px;
+  }
+
+  @media (min-width: 768px) { :root { --card-max: 600px; } }
+  @media (min-width: 1100px) { :root { --card-max: 720px; } }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    transition: background 0.6s ease;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 100; opacity: 0.5;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(ellipse, rgba(255,58,58,0.08) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+    transition: background 0.6s ease;
+  }
+
+  body.judged::after { background: radial-gradient(ellipse, rgba(255,58,58,0.15) 0%, transparent 70%); }
+  body.rage-1::after { background: radial-gradient(ellipse, rgba(255,58,58,0.25) 0%, transparent 70%); }
+  body.rage-2::after { background: radial-gradient(ellipse, rgba(255,58,58,0.4) 0%, transparent 60%); }
+  body.rage-3::after { background: radial-gradient(ellipse, rgba(255,0,0,0.6) 0%, transparent 55%); }
+  body.rage-1 { background: #0d0808; }
+  body.rage-2 { background: #130505; }
+  body.rage-3 { background: #1a0202; animation: ragePulse 0.8s ease-in-out infinite; }
+
+  @keyframes ragePulse { 0%,100% { background: #1a0202; } 50% { background: #220303; } }
+
+  .page {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px 16px 120px;
+    position: relative; z-index: 1; gap: 16px;
+  }
+
+  .card {
+    width: 100%; max-width: var(--card-max);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px; overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 32px 80px rgba(0,0,0,0.8);
+    transition: border-color 0.4s, box-shadow 0.4s;
+  }
+
+  body.rage-1 .card { border-color: rgba(255,58,58,0.3); box-shadow: 0 0 40px rgba(255,0,0,0.15), 0 32px 80px rgba(0,0,0,0.8); }
+  body.rage-2 .card { border-color: rgba(255,58,58,0.6); box-shadow: 0 0 60px rgba(255,0,0,0.3), 0 32px 80px rgba(0,0,0,0.8); }
+  body.rage-3 .card { border-color: rgba(255,0,0,0.9); box-shadow: 0 0 80px rgba(255,0,0,0.5), 0 32px 80px rgba(0,0,0,0.8); }
+
+  .card-top { padding: 32px 28px 28px; border-bottom: 1px solid var(--border); position: relative; }
+  @media (min-width: 768px) { .card-top { padding: 40px 40px 36px; } }
+
+  .scanline {
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation: scanline 3s ease-in-out infinite; opacity: 0.6;
+  }
+  @keyframes scanline { 0%,100% { transform: scaleX(0); opacity: 0; } 50% { transform: scaleX(1); opacity: 0.6; } }
+
+  .logo { font-family: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif; font-size: 28px; letter-spacing: 2px; text-align: center; margin-bottom: 24px; }
+  @media (min-width: 768px) { .logo { font-size: 38px; letter-spacing: 3px; margin-bottom: 32px; } }
+  .logo span { background: linear-gradient(135deg, #ff3a3a 0%, #ff7b00 60%, #ffcc00 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 12px rgba(255,100,0,0.5)); }
+  .logo .fire { -webkit-text-fill-color: initial; filter: none; font-size: 22px; }
+  @media (min-width: 768px) { .logo .fire { font-size: 30px; } }
+
+  .input-wrap { position: relative; margin-bottom: 20px; }
+  .input-wrap textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px 28px 18px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; line-height: 1.5; resize: none; min-height: 80px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; caret-color: var(--accent); }
+  @media (min-width: 768px) { .input-wrap textarea { font-size: 17px; min-height: 100px; padding: 20px 22px 36px 22px; } }
+  .input-wrap textarea::placeholder { color: var(--muted); }
+  .input-wrap textarea:focus { border-color: rgba(255,58,58,0.5); box-shadow: 0 0 0 3px rgba(255,58,58,0.08), inset 0 1px 0 rgba(255,255,255,0.03); }
+  .char-count { position: absolute; bottom: 10px; right: 14px; font-size: 11px; color: var(--muted); pointer-events: none; }
+
+  .btn-judge { width: 100%; padding: 18px; font-family: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif; font-size: 22px; letter-spacing: 3px; color: #000; background: var(--green); border: none; border-radius: 14px; cursor: pointer; position: relative; overflow: hidden; transition: transform 0.15s, box-shadow 0.2s; box-shadow: 0 0 20px var(--glow-green), 0 4px 16px rgba(0,0,0,0.4); }
+  @media (min-width: 768px) { .btn-judge { font-size: 28px; padding: 22px; } }
+  .btn-judge::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 100%); pointer-events: none; }
+  .btn-judge:hover { transform: translateY(-2px); box-shadow: 0 0 30px var(--glow-green), 0 8px 24px rgba(0,0,0,0.5); }
+  .btn-judge:active { transform: translateY(0); }
+  .btn-judge.loading { pointer-events: none; background: #2a6610; color: #5a8a3a; box-shadow: none; }
+  .btn-judge .btn-inner { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .loading-msg { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; }
+  @media (min-width: 768px) { .loading-msg { font-size: 16px; } }
+
+  .card-bottom { padding: 0; max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1), padding 0.4s ease; }
+  .card-bottom.visible { max-height: 800px; padding: 28px 28px 24px; }
+  @media (min-width: 768px) { .card-bottom.visible { padding: 36px 40px 32px; } }
+
+  .score-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 16px; }
+  .score-skull { font-size: 28px; }
+  @media (min-width: 768px) { .score-skull { font-size: 40px; } }
+
+  .score-num { font-family: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif; font-size: 64px; line-height: 1; background: linear-gradient(135deg, #ff3a3a, #ff6a00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 16px rgba(255,58,58,0.6)); animation: scorePop 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  @media (min-width: 768px) { .score-num { font-size: 96px; } }
+  @keyframes scorePop { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin-bottom: 16px; }
+
+  .verdict { text-align: center; font-size: 15px; font-weight: 500; line-height: 1.6; color: #cccce0; margin-bottom: 24px; animation: fadeUp 0.4s 0.25s ease both; }
+  @media (min-width: 768px) { .verdict { font-size: 18px; margin-bottom: 32px; } }
+  @keyframes fadeUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .tier-0 .score-num { background: linear-gradient(135deg, #ff1a1a, #cc0000); filter: drop-shadow(0 0 20px rgba(255,0,0,0.8)); }
+  .tier-1 .score-num { background: linear-gradient(135deg, #ff3a3a, #ff6a00); filter: drop-shadow(0 0 16px rgba(255,58,58,0.6)); }
+  .tier-2 .score-num { background: linear-gradient(135deg, #ff7b00, #ffcc00); filter: drop-shadow(0 0 14px rgba(255,160,0,0.6)); }
+  .tier-3 .score-num { background: linear-gradient(135deg, #66ff66, #00cc44); filter: drop-shadow(0 0 14px rgba(57,255,20,0.5)); }
+  .tier-4 .score-num { background: linear-gradient(135deg, #00ccff, #0066ff); filter: drop-shadow(0 0 14px rgba(0,160,255,0.6)); }
+
+  .actions { display: flex; gap: 12px; animation: fadeUp 0.4s 0.35s ease both; }
+  .btn-secondary { flex: 1; padding: 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+  @media (min-width: 768px) { .btn-secondary { font-size: 16px; padding: 18px; } }
+  .btn-secondary:hover { background: #22222e; border-color: #3a3a50; }
+  .btn-share { flex: 1.2; padding: 14px; background: var(--accent); border: none; border-radius: 12px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; box-shadow: 0 0 16px rgba(255,58,58,0.35); }
+  @media (min-width: 768px) { .btn-share { font-size: 16px; padding: 18px; } }
+  .btn-share:hover { background: #ff1a1a; transform: translateY(-1px); box-shadow: 0 0 24px rgba(255,58,58,0.5); }
+
+  .btn-reroll { background: linear-gradient(135deg, #1a0a0a, #220d0d); border: 1px solid var(--accent); border-radius: 12px; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; padding: 12px 20px; cursor: pointer; width: 100%; box-shadow: 0 0 14px rgba(255,58,58,0.2), inset 0 1px 0 rgba(255,255,255,0.04); transition: box-shadow 0.2s, background 0.2s, transform 0.15s; animation: pulseReroll 2.5s ease-in-out infinite; }
+  @media (min-width: 768px) { .btn-reroll { font-size: 15px; padding: 15px 20px; } }
+  @keyframes pulseReroll { 0%,100% { box-shadow: 0 0 14px rgba(255,58,58,0.2); } 50% { box-shadow: 0 0 26px rgba(255,58,58,0.5); } }
+  .btn-reroll:hover { background: linear-gradient(135deg, #2a0d0d, #330f0f); box-shadow: 0 0 30px rgba(255,58,58,0.55); transform: translateY(-1px); }
+
+  .rage-meter { width: 100%; max-width: var(--card-max); background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px 18px; display: none; animation: fadeUp 0.3s ease both; transition: border-color 0.4s; }
+  .rage-meter.visible { display: block; }
+  body.rage-1 .rage-meter { border-color: rgba(255,58,58,0.3); }
+  body.rage-2 .rage-meter { border-color: rgba(255,58,58,0.6); }
+  body.rage-3 .rage-meter { border-color: rgba(255,0,0,0.9); }
+  .rage-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  @media (min-width: 768px) { .rage-label { font-size: 13px; } .rage-meter { padding: 18px 24px; } }
+  .rage-label .rage-title { color: var(--accent); }
+  .rage-bar-bg { height: 8px; background: var(--surface2); border-radius: 99px; overflow: hidden; border: 1px solid var(--border); }
+  @media (min-width: 768px) { .rage-bar-bg { height: 10px; } }
+  .rage-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #ff3a3a, #ff0000); transition: width 0.4s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 0 8px rgba(255,0,0,0.6); width: 0%; }
+  .rage-status { margin-top: 7px; font-size: 11px; color: var(--muted); text-align: center; min-height: 16px; transition: color 0.3s; }
+  @media (min-width: 768px) { .rage-status { font-size: 13px; } }
+
+  .panels { width: 100%; max-width: var(--card-max); display: none; flex-direction: column; gap: 12px; }
+  .panels.visible { display: flex; }
+  @media (min-width: 768px) { .panels.visible { flex-direction: row; align-items: flex-start; } .panels.visible .panel { flex: 1; } }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .panel-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface2); }
+  @media (min-width: 768px) { .panel-header { padding: 14px 20px; } }
+  .panel-title { font-family: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif; font-size: 16px; letter-spacing: 1.5px; background: linear-gradient(90deg, #ff3a3a, #ff7b00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  @media (min-width: 768px) { .panel-title { font-size: 20px; } }
+  .panel-count { font-size: 11px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 2px 8px; }
+  .panel-body { max-height: 180px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  @media (min-width: 768px) { .panel-body { max-height: 240px; } }
+  .panel-body::-webkit-scrollbar { width: 4px; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+  .shame-item, .lb-item { padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; align-items: flex-start; gap: 10px; animation: fadeUp 0.3s ease both; }
+  @media (min-width: 768px) { .shame-item, .lb-item { padding: 12px 20px; gap: 14px; } }
+  .shame-item:last-child, .lb-item:last-child { border-bottom: none; }
+  .shame-score { font-family: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif; font-size: 22px; line-height: 1; min-width: 36px; text-align: center; flex-shrink: 0; }
+  @media (min-width: 768px) { .shame-score { font-size: 26px; min-width: 44px; } }
+  .shame-text { flex: 1; min-width: 0; }
+  .shame-confession { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+  @media (min-width: 768px) { .shame-confession { font-size: 14px; } }
+  .shame-verdict { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lb-rank { font-family: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif; font-size: 18px; color: var(--muted); min-width: 24px; text-align: center; flex-shrink: 0; }
+  .lb-rank.gold { color: #ffd700; filter: drop-shadow(0 0 6px rgba(255,215,0,0.6)); }
+  .lb-rank.silver { color: #c0c0c0; }
+  .lb-rank.bronze { color: #cd7f32; }
+  .lb-text { flex: 1; min-width: 0; }
+  .lb-confession { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+  .lb-label { font-size: 10px; color: var(--muted); }
+  .lb-score { font-family: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif; font-size: 20px; flex-shrink: 0; }
+  .empty-state { padding: 20px; text-align: center; color: var(--muted); font-size: 12px; }
+
+  .btn-runaway { position: fixed; z-index: 999; padding: 10px 18px; background: var(--surface2); border: 1px solid var(--accent); border-radius: 20px; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; box-shadow: 0 0 12px rgba(255,58,58,0.3); display: none; transition: left 0.15s ease, top 0.15s ease; }
+
+  .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; font-size: 13px; color: var(--text); opacity: 0; transition: all 0.3s ease; z-index: 200; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .footer { font-size: 11px; color: var(--muted); text-align: center; letter-spacing: 0.5px; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { width: 18px; height: 18px; border: 2px solid rgba(57,255,20,0.2); border-top-color: #39ff14; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+  .loading .spinner { display: block; }
+  .loading-msg-wrap { display: none; }
+  .btn-judge.loading .loading-msg-wrap { display: block; }
+  .btn-judge.loading .btn-default-text { display: none; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+  .shake { animation: shake 0.5s ease; }
+  @keyframes superShake { 0%,100%{transform:translate(0,0) rotate(0deg)} 10%{transform:translate(-8px,4px) rotate(-1deg)} 20%{transform:translate(8px,-4px) rotate(1deg)} 30%{transform:translate(-6px,6px) rotate(-0.5deg)} 40%{transform:translate(6px,-6px) rotate(0.5deg)} 50%{transform:translate(-4px,4px) rotate(-1deg)} 60%{transform:translate(4px,-4px) rotate(1deg)} 70%{transform:translate(-8px,2px) rotate(-0.5deg)} 80%{transform:translate(8px,-2px) rotate(0.5deg)} 90%{transform:translate(-4px,4px) rotate(-1deg)} }
+  .super-shake { animation: superShake 0.6s ease; }
+
+  .input-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .input-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  @media (min-width: 768px) { .input-label { font-size: 13px; } }
+  .dice-btn { display: flex; align-items: center; gap: 5px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 600; padding: 4px 10px; cursor: pointer; transition: color 0.2s, border-color 0.2s, transform 0.15s; }
+  .dice-btn:hover { color: var(--text); border-color: #555; }
+  .dice-btn:active { transform: scale(0.95); }
+  .dice-icon { display: inline-block; transition: transform 0.3s; }
+  .dice-btn:hover .dice-icon { transform: rotate(180deg); }
+
+  .btn-appeal { width: 100%; margin-top: 10px; padding: 11px 20px; background: none; border: 1px solid #3a3050; border-radius: 12px; color: #9988cc; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; letter-spacing: 0.3px; transition: background 0.2s, border-color 0.2s, color 0.2s; animation: fadeUp 0.4s 0.55s ease both; opacity: 0; animation-fill-mode: both; }
+  @media (min-width: 768px) { .btn-appeal { font-size: 14px; padding: 14px 20px; } }
+  .btn-appeal:hover { background: rgba(153,136,204,0.08); border-color: #6655aa; color: #bbaaee; }
+
+  .appeal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
+  .appeal-overlay.visible { opacity: 1; pointer-events: all; }
+  .appeal-modal { width: 100%; max-width: 500px; background: #0e0c14; border: 1px solid #4a3a6a; border-radius: 20px; overflow: hidden; box-shadow: 0 0 60px rgba(100,60,200,0.25), 0 32px 80px rgba(0,0,0,0.9); transform: translateY(20px) scale(0.97); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275); }
+  .appeal-overlay.visible .appeal-modal { transform: translateY(0) scale(1); }
+  .appeal-header { padding: 20px 24px 16px; border-bottom: 1px solid #2a1e40; background: linear-gradient(135deg, #0f0c1a, #160e24); text-align: center; }
+  .appeal-seal { font-size: 36px; display: block; margin-bottom: 8px; filter: drop-shadow(0 0 12px rgba(150,100,255,0.5)); }
+  .appeal-court-name { font-family: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif; font-size: 15px; letter-spacing: 3px; color: #9977cc; display: block; margin-bottom: 4px; }
+  .appeal-case-no { font-size: 10px; color: #554466; letter-spacing: 1px; }
+  .appeal-body { padding: 20px 24px; max-height: 340px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #2a1e40 transparent; }
+  .appeal-body::-webkit-scrollbar { width: 4px; }
+  .appeal-body::-webkit-scrollbar-thumb { background: #2a1e40; border-radius: 99px; }
+  .appeal-salutation { font-size: 13px; color: #bbaadd; font-weight: 700; margin-bottom: 12px; display: block; }
+  .appeal-text { font-size: 13px; line-height: 1.7; color: #998899; white-space: pre-wrap; }
+  .appeal-signature { margin-top: 16px; padding-top: 12px; border-top: 1px solid #2a1e40; font-size: 11px; color: #554466; line-height: 1.6; }
+  .appeal-footer { padding: 16px 24px; border-top: 1px solid #2a1e40; display: flex; gap: 10px; }
+  .appeal-close { flex: 1; padding: 12px; background: #1a1228; border: 1px solid #3a2a55; border-radius: 10px; color: #9977cc; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .appeal-close:hover { background: #221633; }
+  .appeal-loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 40px 24px; color: #6644aa; font-size: 13px; }
+  .appeal-spinner { width: 16px; height: 16px; border: 2px solid rgba(150,80,255,0.2); border-top-color: #9955ff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+  /* ═══════════════════════════════════════════
+     PWA INSTALL BANNER
+  ═══════════════════════════════════════════ */
+  .install-banner {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 900;
+    padding: 0 16px 16px;
+    transform: translateY(110%);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+  }
+
+  .install-banner.visible {
+    transform: translateY(0);
+    pointer-events: all;
+  }
+
+  .install-banner-inner {
+    max-width: var(--card-max);
+    margin: 0 auto;
+    background: #111118;
+    border: 1px solid #2a2a38;
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+  }
+
+  .install-icon { font-size: 28px; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(255,100,0,0.4)); }
+
+  .install-text { flex: 1; min-width: 0; }
+
+  .install-title {
+    font-family: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif;
+    font-size: 15px; letter-spacing: 1px;
+    background: linear-gradient(135deg, #ff3a3a, #ff7b00);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    display: block; margin-bottom: 2px;
+  }
+
+  .install-sub { font-size: 11px; color: var(--muted); line-height: 1.4; display: block; }
+  .install-sub strong { color: var(--text); }
+
+  .install-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  .btn-install {
+    padding: 9px 16px;
+    background: var(--green); border: none; border-radius: 10px;
+    color: #000; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+    cursor: pointer; white-space: nowrap;
+    box-shadow: 0 0 12px var(--glow-green);
+    transition: transform 0.15s, box-shadow 0.2s;
+  }
+  .btn-install:hover { transform: translateY(-1px); box-shadow: 0 0 20px var(--glow-green); }
+
+  .btn-install-dismiss {
+    padding: 9px 12px;
+    background: none; border: 1px solid var(--border); border-radius: 10px;
+    color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-install-dismiss:hover { border-color: #555; color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="card" id="card">
+    <div class="card-top">
+      <div class="scanline"></div>
+      <div class="logo">
+        <span class="fire">🔥</span>
+        <span>The Internet Judges You</span>
+        <span class="fire">🔥</span>
+      </div>
+      <div class="input-label-row">
+        <span class="input-label">Your confession</span>
+        <button class="dice-btn" onclick="fillRandomConfession()" title="Random confession"><span class="dice-icon">🎲</span> Feeling lucky?</button>
+      </div>
+      <div class="input-wrap">
+        <textarea id="confessionInput" maxlength="200" placeholder="Tell us what you did... the internet is watching."></textarea>
+        <span class="char-count" id="charCount">0/200</span>
+      </div>
+      <button class="btn-judge" id="judgeBtn" onclick="judge('button')">
+        <div class="btn-inner">
+          <div class="spinner"></div>
+          <span class="btn-default-text">⚖️ JUDGE ME</span>
+          <span class="loading-msg-wrap"><span class="loading-msg" id="loadingMsg"></span></span>
+        </div>
+      </button>
+    </div>
+
+    <div class="card-bottom" id="resultPanel">
+      <div class="score-row" id="scoreRow">
+        <span class="score-skull">💀</span>
+        <span class="score-num" id="scoreDisplay">0/10</span>
+        <span class="score-skull">💀</span>
+      </div>
+      <div class="divider"></div>
+      <div class="verdict" id="verdictText"></div>
+      <div class="actions">
+        <button class="btn-secondary" onclick="tryAgain()">Try Again</button>
+        <button class="btn-share" onclick="share()">📤 Share</button>
+      </div>
+      <div style="margin-top:14px; animation: fadeUp 0.4s 0.45s ease both; opacity:0; animation-fill-mode:both;">
+        <button class="btn-reroll" id="rerollBtn" onclick="startRunaway()">😤 Didn't get the verdict you wanted?</button>
+      </div>
+      <button class="btn-appeal" id="appealBtn" onclick="openAppeal()">⚖️ Appeal to a Higher Power</button>
+    </div>
+  </div>
+
+  <div class="rage-meter" id="rageMeter">
+    <div class="rage-label">
+      <span class="rage-title">😤 Rage-o-meter</span>
+      <span id="rageAttempts">0 attempts</span>
+    </div>
+    <div class="rage-bar-bg"><div class="rage-bar-fill" id="rageBarFill"></div></div>
+    <div class="rage-status" id="rageStatus">The verdict is final.</div>
+  </div>
+
+  <div class="panels" id="panels">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">🧱 Wall of Shame</span>
+        <span class="panel-count" id="shameCount">0 confessions</span>
+      </div>
+      <div class="panel-body" id="shameList">
+        <div class="empty-state">Nothing yet. Go get judged.</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">🏆 Most Unhinged</span>
+        <span class="panel-count" id="lbCount">this session</span>
+      </div>
+      <div class="panel-body" id="lbList">
+        <div class="empty-state">No degenerates on the board yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">No humans were harmed. Probably. · 
+</div>
+
+<div class="toast" id="toast"></div>
+<button class="btn-runaway" id="runawayBtn" onclick="runawayClicked()"></button>
+
+<!-- ═══ PWA INSTALL BANNER ═══ -->
+<div class="install-banner" id="installBanner">
+  <div class="install-banner-inner">
+    <div class="install-icon">🔥</div>
+    <div class="install-text">
+      <span class="install-title">Add to Home Screen</span>
+      <span class="install-sub" id="installSub">Get instant access. No app store. No nonsense.</span>
+    </div>
+    <div class="install-actions">
+      <button class="btn-install-dismiss" onclick="dismissInstall()">Not now</button>
+      <button class="btn-install" id="installBtn" onclick="triggerInstall()">Add it ⚡</button>
+    </div>
+  </div>
+</div>
+
+<!-- APPEAL MODAL -->
+<div class="appeal-overlay" id="appealOverlay" onclick="closeAppealOnBg(event)">
+  <div class="appeal-modal">
+    <div class="appeal-header">
+      <span class="appeal-seal">⚖️</span>
+      <span class="appeal-court-name">The Supreme Court of the Internet</span>
+      <span class="appeal-case-no" id="appealCaseNo">CASE NO. LOADING...</span>
+    </div>
+    <div id="appealContent">
+      <div class="appeal-loading"><div class="appeal-spinner"></div><span>Convening the court...</span></div>
+    </div>
+    <div class="appeal-footer">
+      <button class="appeal-close" onclick="closeAppeal()">🔒 Accept Judgement</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// ANALYTICS
+// ═══════════════════════════════════════════
+const SESSION_START = Date.now();
+let firstJudgementTime = null;
+let judgeCount = 0;
+let hasTrackedWallOfShame = false;
+let submitMethod = 'button';
+
+function track(eventName) {
+  try {
+    if (window.cfBeacon) cfBeacon.push({ type: 'event', name: eventName });
+    else { window.__cfTrackQueue = window.__cfTrackQueue || []; window.__cfTrackQueue.push(eventName); }
+  } catch(e) {}
+  console.log(`[Analytics] ${eventName}`);
+}
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (window.__cfTrackQueue && window.__cfTrackQueue.length) {
+      window.__cfTrackQueue.forEach(e => { try { if(window.cfBeacon) cfBeacon.push({type:'event',name:e}); } catch(_){} });
+      window.__cfTrackQueue = [];
+    }
+  }, 2000);
+});
+
+let visibilityStart = Date.now();
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    const t = Math.round((Date.now() - visibilityStart) / 1000);
+    if (t >= 30) track('engaged_30s');
+    if (t >= 60) track('engaged_60s');
+    if (t >= 120) track('engaged_2min');
+  } else { visibilityStart = Date.now(); }
+});
+
+window.addEventListener('beforeunload', () => {
+  const t = Math.round((Date.now() - SESSION_START) / 1000);
+  if (t < 10) track('session_under_10s');
+  else if (t < 30) track('session_10_to_30s');
+  else if (t < 60) track('session_30_to_60s');
+  else if (t < 120) track('session_1_to_2min');
+  else track('session_over_2min');
+});
+
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const FALLBACK_JUDGEMENTS = [
+  { score: 1, verdict: "Absolutely unhinged behaviour. The council has unanimously voted to revoke your internet privileges." },
+  { score: 1, verdict: "We called a meeting. Everyone agreed. You need to stop." },
+  { score: 1, verdict: "Your mum saw this and she's not coming to pick you up anymore." },
+  { score: 1, verdict: "Scientists have officially reclassified this as a cry for help." },
+  { score: 2, verdict: "Desperate behaviour detected. Please regain composure immediately." },
+  { score: 2, verdict: "Sir/Madam, this is a Wendy's. And even we have standards." },
+  { score: 2, verdict: "You typed this out, read it back, and still hit send. That's the real crime." },
+  { score: 2, verdict: "A therapist saw this over our shoulder and wrote three pages of notes." },
+  { score: 3, verdict: "Chaotic energy. Unpredictable. Slightly concerning. We're watching you." },
+  { score: 3, verdict: "We showed this to a golden retriever. Even it looked disappointed." },
+  { score: 3, verdict: "There's a support group for people like you. Attendance is mandatory." },
+  { score: 4, verdict: "Bold move. Could've gone worse. Didn't go great. 4/10." },
+  { score: 4, verdict: "The audacity is almost admirable. Almost." },
+  { score: 4, verdict: "You're not the main character. You're not even in the credits." },
+  { score: 5, verdict: "Morally grey. You exist somewhere between a villain and a cautionary tale." },
+  { score: 5, verdict: "Not ideal. Not a disaster. You're the beige of human decisions." },
+  { score: 5, verdict: "This has the same energy as replying 'you too' when a waiter says enjoy your meal." },
+  { score: 6, verdict: "Questionable, but survivable. You'll be fine. Probably." },
+  { score: 6, verdict: "We've seen worse. We've seen better. You're aggressively average." },
+  { score: 6, verdict: "Not great, not terrible. You're the 3.6 roentgen of human behaviour." },
+  { score: 7, verdict: "Solid effort. Minor crimes committed. The jury is largely sympathetic." },
+  { score: 7, verdict: "You did a thing. It wasn't perfect. But here you are, standing tall." },
+  { score: 8, verdict: "Genuinely not bad. The internet is mildly impressed, which is rare." },
+  { score: 8, verdict: "Character unlocked: Competent Adult. Cherish this moment." },
+  { score: 9, verdict: "Exceptional. We don't know how you pulled that off but respect." },
+  { score: 9, verdict: "Top 3% of confessions this week. The competition was not stiff, but still." },
+  { score: 10, verdict: "Perfect 10. You have transcended the human experience. We're not worthy." },
+  { score: 10, verdict: "The internet has awarded you a gold star and a restraining order — out of admiration." }
+];
+
+const LOADING_MESSAGES = [
+  "consulting the elders...", "checking your search history...", "cross-referencing your texts...",
+  "asking your ex...", "polling the jury...", "reviewing your browser history...",
+  "contacting your GP...", "running a background check...", "summoning the council...",
+  "reading your DMs...", "checking your Spotify wrapped...", "triangulating your shame...",
+  "calculating the damage...", "assessing the vibes...", "asking your mum...",
+];
+
+const RUNAWAY_TAUNTS = [
+  "haha 😂", "catch me if you can!", "nope 👋", "not today bestie",
+  "lol no", "nice try", "🏃 byeeee", "the verdict stands",
+  "touch grass first", "skill issue", "😈 never",
+  "you can't handle the truth", "the internet has spoken",
+  "try again... oh wait", "404: better verdict not found",
+];
+
+const RAGE_STATUSES = [
+  "The verdict is final.", "Still final.", "Very final.", "Extremely final.",
+  "The internet is getting annoyed.", "Stop it.", "STOP.", "WE SAID WHAT WE SAID. 🔴",
+];
+
+const RANDOM_CONFESSIONS = [
+  "I told her I love her after 2 days...",
+  "I laughed at my own joke for 3 minutes straight and nobody else did",
+  "I googled myself and cried",
+  "I sent a voice note by accident and it was just me breathing",
+  "I've been using my gym membership as a parking permit for 8 months",
+  "I replied 'you too' when the waiter said enjoy your meal",
+  "I told my boss I was sick then posted a beach pic",
+  "I've been pretending to understand that film for 4 years",
+  "I added 'creative thinker' to my CV and I genuinely believe it",
+  "I called a teacher mum once and I haven't recovered",
+  "I fake laughed at a joke I told myself",
+  "I've rehearsed arguments in the shower that never happened",
+  "I waved back at someone who wasn't waving at me",
+  "I sent a meme to my entire contacts list instead of one person",
+  "I ate cereal for dinner and felt proud of myself",
+  "I've been mispronouncing quinoa for 6 years and only just found out",
+  "I liked my ex's photo from 2019 at 2am and immediately deleted the app",
+  "I accidentally called my teacher 'mum' and then called her 'dad' to cover it",
+  "I told someone I'd 'definitely read that book' and I haven't read any books",
+  "I've been nodding along in meetings for 3 years. I have no idea what's going on.",
+];
+
+const APPEAL_REJECTIONS = [
+  {
+    salutation: "To Whom It May Concern (though frankly, it concerns us greatly),",
+    body: `The Supreme Court of the Internet has received your appeal regarding Case No. {CASE} and has reviewed it with the gravity it deserves — which is to say, very little.\n\nAfter deliberation lasting approximately four seconds, the Court finds as follows:\n\nYour original verdict of {SCORE}/10 stands. Not merely stands — it has been reinforced, laminated, and filed in the Permanent Archive of Questionable Decisions (Vol. XLVII).\n\nThe Court notes that the nature of your confession — specifically the sheer audacity with which it was submitted — provides no grounds for appeal whatsoever. In fact, submitting this appeal has been noted in your file as a second offence.\n\nYou are hereby advised to reflect on your choices, hydrate, and under no circumstances repeat this behaviour in the presence of witnesses.`,
+    signature: `By Order of the Court,\nThe Rt. Hon. Justice Algorithm\nSupreme Court of the Internet\nEstablished 2009 · Disbanded briefly in 2012 · Reinstated under protest`
+  },
+  {
+    salutation: "Dear Petitioner,",
+    body: `We acknowledge receipt of your appeal. We wish we did not have to.\n\nThe panel convened at 3am (internet time) to review your submission. Three justices wept. One retired. The remaining members have agreed to deliver this ruling and then take an indefinite sabbatical.\n\nYour score of {SCORE}/10 is hereby upheld with the following addendum: the Court considered awarding a lower score in light of this appeal but ultimately decided against it on the grounds that some things are already final.\n\nSection 7, Paragraph 3 of the Internet Code of Conduct (revised) states clearly: "A verdict, once rendered by the algorithm, shall not be questioned, disputed, or sobbed about on a Tuesday."\n\nIt is Tuesday. We checked.\n\nYour appeal has been denied, archived, and shared in the staff group chat.`,
+    signature: `Yours, with deep concern,\nThe Honourable Council of Online Judgement\nRef: DENIED/OBVIOUSLY/{CASE}`
+  },
+  {
+    salutation: "Greetings, Appellant,",
+    body: `The Court has reviewed your petition for reconsideration of Verdict {CASE} and is prepared to deliver its findings.\n\nFinding 1: No.\n\nFinding 2: Absolutely not.\n\nFinding 3: The Court is frankly surprised you had the confidence to appeal. This confidence has been noted and will not be rewarded.\n\nYour score of {SCORE}/10 was not arrived at lightly. It was the result of rigorous algorithmic analysis, peer review, and a brief but meaningful conversation with your search history. The Court stands by its original assessment.\n\nFurthermore, the act of appealing has triggered a mandatory review of your entire digital footprint. Early results are not promising. Full findings to follow.`,
+    signature: `Per the Court,\nDeputy Clerk T. Ruthless\nOffice of Final Verdicts\n'We Have Not Changed Our Minds Since 2007'`
+  },
+  {
+    salutation: "To the Appellant (you know who you are),",
+    body: `We have reviewed your appeal with the thoroughness it deserves, which is to say we glanced at it, exhaled slowly, and convened an emergency session.\n\nThe session lasted eleven minutes. Eight of those were spent in silence.\n\nThe Court's position on your score of {SCORE}/10 remains unchanged and shall remain unchanged for the foreseeable future, including but not limited to: this lifetime, subsequent lifetimes, and any parallel universes in which you also made this decision.\n\nWe note that you have now made two poor decisions in quick succession: the original incident, and this appeal. The Court urges you not to go for three.\n\nYour request for leniency has been reviewed, considered, and placed in the bin marked 'Not A Chance'.`,
+    signature: `Regretfully yours,\nThe Full Bench of the Internet\nCase Status: CLOSED. Permanently.`
+  }
+];
+
+let judgements = [...FALLBACK_JUDGEMENTS];
+fetch('judgements.json')
+  .then(r => r.ok ? r.json() : null)
+  .then(d => { if (d && Array.isArray(d)) judgements = d; })
+  .catch(() => {});
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let currentResult = null;
+let history = [];
+let rageCount = 0;
+let loadingMsgInterval = null;
+let runawayActive = false;
+let appealCaseNum = null;
+
+// ═══════════════════════════════════════════
+// INPUT
+// ═══════════════════════════════════════════
+const input = document.getElementById('confessionInput');
+const charCountEl = document.getElementById('charCount');
+
+input.addEventListener('input', () => {
+  const len = input.value.length;
+  charCountEl.textContent = `${len}/200`;
+  charCountEl.style.color = len > 160 ? '#ff3a3a' : 'var(--muted)';
+});
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitMethod = 'keyboard'; judge('keyboard'); }
+});
+
+// ═══════════════════════════════════════════
+// LOADING MESSAGES
+// ═══════════════════════════════════════════
+function startLoadingMessages() {
+  const el = document.getElementById('loadingMsg');
+  let i = Math.floor(Math.random() * LOADING_MESSAGES.length);
+  el.textContent = LOADING_MESSAGES[i];
+  loadingMsgInterval = setInterval(() => { i = (i + 1) % LOADING_MESSAGES.length; el.textContent = LOADING_MESSAGES[i]; }, 400);
+}
+function stopLoadingMessages() { clearInterval(loadingMsgInterval); loadingMsgInterval = null; }
+
+// ═══════════════════════════════════════════
+// JUDGE
+// ═══════════════════════════════════════════
+async function judge(method) {
+  const text = input.value.trim();
+  if (!text) { showToast('✋ Type something first, coward.'); track('empty_submit_attempt'); input.focus(); return; }
+
+  const btn = document.getElementById('judgeBtn');
+  btn.classList.add('loading');
+  startLoadingMessages();
+  await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
+
+  const pick = judgements[Math.floor(Math.random() * judgements.length)];
+  currentResult = { confession: text, ...pick };
+  stopLoadingMessages();
+  btn.classList.remove('loading');
+  judgeCount++;
+
+  track('verdict_reveal');
+  track(method === 'keyboard' ? 'submit_via_keyboard' : 'submit_via_button');
+
+  const len = text.length;
+  if (len <= 30) track('confession_length_short');
+  else if (len <= 80) track('confession_length_medium');
+  else if (len <= 140) track('confession_length_long');
+  else track('confession_length_very_long');
+
+  if (pick.score <= 2) track('score_tier_1_2');
+  else if (pick.score <= 4) track('score_tier_3_4');
+  else if (pick.score <= 6) track('score_tier_5_6');
+  else if (pick.score <= 8) track('score_tier_7_8');
+  else track('score_tier_9_10');
+
+  if (judgeCount === 1) {
+    firstJudgementTime = Date.now();
+    const ttj = Math.round((firstJudgementTime - SESSION_START) / 1000);
+    if (ttj < 15) track('first_judge_under_15s');
+    else if (ttj < 30) track('first_judge_15_to_30s');
+    else if (ttj < 60) track('first_judge_30_to_60s');
+    else track('first_judge_over_60s');
+  }
+
+  if (judgeCount === 2) track('second_judgement');
+  if (judgeCount === 3) track('third_judgement');
+  if (judgeCount >= 5) track('five_plus_judgements');
+
+  addToHistory(currentResult);
+  showResult(pick);
+  document.body.classList.add('judged');
+  rageCount = 0; updateRage();
+}
+
+// ═══════════════════════════════════════════
+// SHOW RESULT
+// ═══════════════════════════════════════════
+function showResult({ score, verdict }) {
+  const panel = document.getElementById('resultPanel');
+  const scoreEl = document.getElementById('scoreDisplay');
+  const verdictEl = document.getElementById('verdictText');
+  const scoreRow = document.getElementById('scoreRow');
+  const card = document.getElementById('card');
+
+  scoreEl.textContent = `${score}/10`;
+  verdictEl.textContent = verdict;
+  scoreEl.style.animation = 'none'; scoreEl.offsetHeight; scoreEl.style.animation = '';
+
+  scoreRow.className = 'score-row';
+  if (score <= 2) scoreRow.classList.add('tier-0');
+  else if (score <= 4) scoreRow.classList.add('tier-1');
+  else if (score <= 6) scoreRow.classList.add('tier-2');
+  else if (score <= 8) scoreRow.classList.add('tier-3');
+  else scoreRow.classList.add('tier-4');
+
+  panel.classList.add('visible');
+
+  if (score <= 3) {
+    setTimeout(() => {
+      card.classList.add('shake');
+      card.addEventListener('animationend', () => card.classList.remove('shake'), { once: true });
+    }, 400);
+  }
+  document.getElementById('rerollBtn').style.display = 'block';
+}
+
+// ═══════════════════════════════════════════
+// TRY AGAIN
+// ═══════════════════════════════════════════
+function tryAgain() {
+  track('try_again_clicked');
+  document.getElementById('resultPanel').classList.remove('visible');
+  input.value = ''; charCountEl.textContent = '0/200';
+  currentResult = null;
+  document.body.classList.remove('judged');
+  rageCount = 0; updateRage();
+  runawayActive = false;
+  const runaway = document.getElementById('runawayBtn');
+  runaway.style.display = 'none'; runaway.style.transform = '';
+  document.getElementById('rerollBtn').style.display = 'block';
+  submitMethod = 'button'; input.focus();
+}
+
+// ═══════════════════════════════════════════
+// SHARE
+// ═══════════════════════════════════════════
+async function share() {
+  if (!currentResult) return;
+  const text = `🔥 The Internet Judged Me 🔥\n\n"${currentResult.confession}"\n\n💀 ${currentResult.score}/10 💀\n"${currentResult.verdict}"\n\n— theinternetjudgesyou.github.io`;
+  if (navigator.share) {
+    try { await navigator.share({ text }); track('share_native'); return; }
+    catch(e) { track('share_native_cancelled'); return; }
+  }
+  try { await navigator.clipboard.writeText(text); showToast('📋 Copied to clipboard!'); track('share_clipboard'); }
+  catch { showToast('📋 Copy failed — screenshot it!'); track('share_failed'); }
+}
+
+// ═══════════════════════════════════════════
+// WALL OF SHAME + LEADERBOARD
+// ═══════════════════════════════════════════
+function addToHistory(result) {
+  history.unshift({ ...result });
+  renderShame(); renderLeaderboard();
+  document.getElementById('panels').classList.add('visible');
+  if (!hasTrackedWallOfShame) { hasTrackedWallOfShame = true; track('wall_of_shame_viewed'); }
+}
+
+function scoreColor(score) {
+  if (score <= 2) return '#ff1a1a'; if (score <= 4) return '#ff6a00';
+  if (score <= 6) return '#ffcc00'; if (score <= 8) return '#39ff14';
+  return '#00ccff';
+}
+
+function renderShame() {
+  const list = document.getElementById('shameList');
+  document.getElementById('shameCount').textContent = `${history.length} confession${history.length !== 1 ? 's' : ''}`;
+  if (!history.length) { list.innerHTML = '<div class="empty-state">Nothing yet. Go get judged.</div>'; return; }
+  list.innerHTML = history.slice(0, 10).map(item => `
+    <div class="shame-item">
+      <span class="shame-score" style="color:${scoreColor(item.score)}">${item.score}/10</span>
+      <div class="shame-text">
+        <div class="shame-confession">"${item.confession}"</div>
+        <div class="shame-verdict">${item.verdict}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderLeaderboard() {
+  const list = document.getElementById('lbList');
+  if (!history.length) { list.innerHTML = '<div class="empty-state">No degenerates on the board yet.</div>'; return; }
+  const sorted = [...history].sort((a, b) => a.score - b.score).slice(0, 5);
+  const rankSymbols = ['🥇', '🥈', '🥉', '4', '5'];
+  const rankClasses = ['gold', 'silver', 'bronze', '', ''];
+  list.innerHTML = sorted.map((item, i) => `
+    <div class="lb-item">
+      <span class="lb-rank ${rankClasses[i]}">${rankSymbols[i]}</span>
+      <div class="lb-text">
+        <div class="lb-confession">"${item.confession}"</div>
+        <div class="lb-label">Most unhinged · ${item.score}/10</div>
+      </div>
+      <span class="lb-score" style="color:${scoreColor(item.score)}">${item.score}</span>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// RAGE-O-METER
+// ═══════════════════════════════════════════
+const MAX_RAGE = 8;
+
+function updateRage() {
+  const pct = Math.min((rageCount / MAX_RAGE) * 100, 100);
+  document.getElementById('rageBarFill').style.width = pct + '%';
+  document.getElementById('rageAttempts').textContent = `${rageCount} attempt${rageCount !== 1 ? 's' : ''}`;
+  document.getElementById('rageStatus').textContent = RAGE_STATUSES[Math.min(rageCount, RAGE_STATUSES.length - 1)];
+  if (rageCount > 0) document.getElementById('rageMeter').classList.add('visible');
+  else document.getElementById('rageMeter').classList.remove('visible');
+  document.body.classList.remove('rage-1', 'rage-2', 'rage-3');
+  if (rageCount === Math.floor(MAX_RAGE * 0.5)) track('rage_meter_50pct');
+  if (rageCount >= MAX_RAGE) {
+    document.body.classList.add('rage-3'); track('rage_meter_maxed');
+    const card = document.getElementById('card');
+    card.classList.add('super-shake');
+    card.addEventListener('animationend', () => card.classList.remove('super-shake'), { once: true });
+  } else if (rageCount >= Math.floor(MAX_RAGE * 0.6)) document.body.classList.add('rage-2');
+  else if (rageCount >= Math.floor(MAX_RAGE * 0.3)) document.body.classList.add('rage-1');
+}
+
+// ═══════════════════════════════════════════
+// RUNAWAY BUTTON
+// ═══════════════════════════════════════════
+function startRunaway() {
+  rageCount++; updateRage();
+  track('runaway_button_activated');
+  const btn = document.getElementById('runawayBtn');
+  btn.style.display = 'block'; btn.style.transition = 'none';
+  runawayActive = true; moveRunaway(btn);
+  document.getElementById('rerollBtn').style.display = 'none';
+}
+
+function moveRunaway(btn) {
+  if (!runawayActive) return;
+  const margin = 20;
+  const x = margin + Math.random() * Math.max(0, window.innerWidth - btn.offsetWidth - margin);
+  const y = margin + Math.random() * Math.max(0, window.innerHeight - btn.offsetHeight - margin);
+  btn.style.left = x + 'px'; btn.style.top = y + 'px';
+  btn.textContent = RUNAWAY_TAUNTS[Math.floor(Math.random() * RUNAWAY_TAUNTS.length)];
+}
+
+function runawayClicked() {
+  track('runaway_button_caught');
+  runawayActive = false;
+  const btn = document.getElementById('runawayBtn');
+  btn.textContent = "😤 Fine. Here's another one.";
+  btn.style.left = '50%'; btn.style.top = '50%'; btn.style.transform = 'translate(-50%, -50%)';
+  setTimeout(() => {
+    btn.style.display = 'none'; btn.style.transform = '';
+    document.getElementById('rerollBtn').style.display = 'block';
+    const pick = judgements[Math.floor(Math.random() * judgements.length)];
+    currentResult = { confession: currentResult?.confession || '', ...pick };
+    showResult(pick); showToast("😩 Fine. There's your verdict.");
+    track('verdict_reveal_via_runaway');
+  }, 1200);
+}
+
+document.addEventListener('mousemove', (e) => {
+  if (!runawayActive) return;
+  const btn = document.getElementById('runawayBtn');
+  const rect = btn.getBoundingClientRect();
+  const dx = e.clientX - (rect.left + rect.width / 2);
+  const dy = e.clientY - (rect.top + rect.height / 2);
+  if (Math.sqrt(dx*dx + dy*dy) < 120) moveRunaway(btn);
+});
+
+document.addEventListener('touchmove', (e) => {
+  if (!runawayActive) return;
+  const t = e.touches[0], btn = document.getElementById('runawayBtn');
+  const rect = btn.getBoundingClientRect();
+  const dx = t.clientX - (rect.left + rect.width / 2);
+  const dy = t.clientY - (rect.top + rect.height / 2);
+  if (Math.sqrt(dx*dx + dy*dy) < 140) moveRunaway(btn);
+}, { passive: true });
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════
+// DICE
+// ═══════════════════════════════════════════
+function fillRandomConfession() {
+  const pick = RANDOM_CONFESSIONS[Math.floor(Math.random() * RANDOM_CONFESSIONS.length)];
+  input.value = pick;
+  const len = pick.length;
+  charCountEl.textContent = len + '/200';
+  charCountEl.style.color = len > 160 ? '#ff3a3a' : 'var(--muted)';
+  input.focus();
+  input.style.borderColor = 'rgba(255,200,0,0.6)';
+  setTimeout(() => { input.style.borderColor = ''; }, 600);
+  track('dice_confession_used');
+}
+
+// ═══════════════════════════════════════════
+// APPEAL
+// ═══════════════════════════════════════════
+function openAppeal() {
+  if (!currentResult) return;
+  track('appeal_submitted');
+  appealCaseNum = 'IJC-' + Math.floor(Math.random() * 90000 + 10000) + '-' + new Date().getFullYear();
+  document.getElementById('appealCaseNo').textContent = 'CASE NO. ' + appealCaseNum;
+  const overlay = document.getElementById('appealOverlay');
+  const content = document.getElementById('appealContent');
+  content.innerHTML = '<div class="appeal-loading"><div class="appeal-spinner"></div><span>Convening the court...</span></div>';
+  overlay.classList.add('visible');
+  setTimeout(() => {
+    const template = APPEAL_REJECTIONS[Math.floor(Math.random() * APPEAL_REJECTIONS.length)];
+    const body = template.body.replace(/{CASE}/g, appealCaseNum).replace(/{SCORE}/g, currentResult.score);
+    content.innerHTML = `
+      <div class="appeal-body">
+        <span class="appeal-salutation">${template.salutation}</span>
+        <div class="appeal-text">${body}</div>
+        <div class="appeal-signature">${template.signature.replace(/\n/g, '<br>')}</div>
+      </div>`;
+    track('appeal_letter_rendered');
+  }, 1800);
+}
+
+function closeAppeal() {
+  document.getElementById('appealOverlay').classList.remove('visible');
+  track('appeal_accepted_closed');
+}
+
+function closeAppealOnBg(e) {
+  if (e.target === document.getElementById('appealOverlay')) { track('appeal_dismissed_background'); closeAppeal(); }
+}
+
+// ═══════════════════════════════════════════
+// PWA INSTALL BANNER
+// ═══════════════════════════════════════════
+let deferredInstallPrompt = null;
+let installBannerShown = false;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+
+// Android / Desktop Chrome — catch the native prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  setTimeout(() => showInstallBanner('android'), 4000);
+});
+
+// iOS — show manual instructions instead
+if (isIOS && !isInStandaloneMode) {
+  setTimeout(() => showInstallBanner('ios'), 4000);
+}
+
+// Already installed as PWA — never show banner
+window.addEventListener('appinstalled', () => {
+  hideInstallBanner();
+  track('pwa_installed');
+});
+
+function showInstallBanner(platform) {
+  if (isInStandaloneMode || installBannerShown) return;
+  installBannerShown = true;
+
+  if (platform === 'ios') {
+    // Replace sub text with iOS tap-share instructions
+    document.getElementById('installSub').innerHTML = 'Tap <strong>Share ⬆️</strong> then <strong>Add to Home Screen</strong>';
+    document.getElementById('installBtn').style.display = 'none';
+  }
+
+  document.getElementById('installBanner').classList.add('visible');
+  track('pwa_install_banner_shown');
+}
+
+function hideInstallBanner() {
+  document.getElementById('installBanner').classList.remove('visible');
+}
+
+function triggerInstall() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(choice => {
+    track(choice.outcome === 'accepted' ? 'pwa_install_accepted' : 'pwa_install_declined');
+    deferredInstallPrompt = null;
+    hideInstallBanner();
+  });
+}
+
+function dismissInstall() {
+  hideInstallBanner();
+  track('pwa_install_dismissed');
+}
+
+// ═══════════════════════════════════════════
+// SERVICE WORKER
+// ═══════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/The-Internet-Judge/service-worker.js')
+      .then(() => console.log('[SW] Registered ✓'))
+      .catch(err => console.warn('[SW] Failed:', err));
+  });
+}
+</script>
+
+<!-- Cloudflare Web Analytics — replace YOUR_TOKEN_HERE -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+  data-cf-beacon='{"token": "cdf55880767b4f85a35c689006fb0edc"}'></script>
+
+
+</body>
+</html>
