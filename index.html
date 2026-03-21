@@ -228,6 +228,22 @@
   @keyframes superShake { 0%,100%{transform:translate(0,0) rotate(0deg)} 10%{transform:translate(-8px,4px) rotate(-1deg)} 20%{transform:translate(8px,-4px) rotate(1deg)} 30%{transform:translate(-6px,6px) rotate(-0.5deg)} 40%{transform:translate(6px,-6px) rotate(0.5deg)} 50%{transform:translate(-4px,4px) rotate(-1deg)} 60%{transform:translate(4px,-4px) rotate(1deg)} 70%{transform:translate(-8px,2px) rotate(-0.5deg)} 80%{transform:translate(8px,-2px) rotate(0.5deg)} 90%{transform:translate(-4px,4px) rotate(-1deg)} }
   .super-shake { animation: superShake 0.6s ease; }
 
+  /* ═══════════════════════════════════════════
+     BUY ME A COFFEE
+  ═══════════════════════════════════════════ */
+  .bmc-fixed {
+    position: fixed;
+    bottom: 20px;
+    right: 16px;
+    z-index: 950;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.6));
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+  .bmc-fixed:hover {
+    transform: translateY(-2px);
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.7));
+  }
+
   .input-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .input-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
   @media (min-width: 768px) { .input-label { font-size: 13px; } }
@@ -1007,6 +1023,19 @@ if ('serviceWorker' in navigator) {
 <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
   data-cf-beacon='{"token": "cdf55880767b4f85a35c689006fb0edc"}'></script>
 
+<!-- Buy Me a Coffee — fixed bottom-right -->
+<div class="bmc-fixed">
+  <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js"
+    data-name="bmc-button"
+    data-slug="dummiesbuie"
+    data-color="#000000"
+    data-emoji=""
+    data-font="Comic"
+    data-text="Buy me a coffee"
+    data-outline-color="#ffffff"
+    data-font-color="#ffffff"
+    data-coffee-color="#FFDD00"></script>
+</div>
 
 </body>
 </html>
